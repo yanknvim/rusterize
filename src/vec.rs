@@ -1,4 +1,10 @@
-use std::ops::{Add, Sub, Mul, Div};
+use std::ops::{Add, Div, Mul, Sub};
+
+#[derive(Debug)]
+pub struct Vec2 {
+    pub x: f32,
+    pub y: f32,
+}
 
 #[derive(Debug)]
 pub struct Vec4 {
@@ -8,15 +14,75 @@ pub struct Vec4 {
     pub w: f32,
 }
 
+impl Vec2 {
+    #[inline]
+    pub fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
+
+    pub fn to_i32(self) -> (i32, i32) {
+        (self.x as i32, self.y as i32)
+    }
+
+    pub fn rotate(&self, angle: f32) -> Self {
+        let c = angle.cos();
+        let s = angle.sin();
+
+        Self {
+            x: self.x * c - self.y * s,
+            y: self.x * s + self.y * c,
+        }
+    }
+}
+
+impl Add for Vec2 {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self {
+        Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl Sub for Vec2 {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self {
+        Self {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+
+impl Mul for Vec2 {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self {
+        Self {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+        }
+    }
+}
+
+impl Div for Vec2 {
+    type Output = Self;
+
+    fn div(self, rhs: Self) -> Self {
+        Self {
+            x: self.x / rhs.x,
+            y: self.y / rhs.y,
+        }
+    }
+}
+
 impl Vec4 {
     #[inline]
     pub fn new(x: f32, y: f32, z: f32, w: f32) -> Self {
-        Self {
-            x,
-            y,
-            z,
-            w,
-        }
+        Self { x, y, z, w }
     }
 
     #[inline]

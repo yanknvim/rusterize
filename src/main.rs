@@ -1,11 +1,14 @@
 mod framebuffer;
+mod obj;
 mod rasterizer;
+mod scene;
 mod vec;
 
 use crate::{
     framebuffer::FrameBuffer,
     rasterizer::{Rasterizer, Vertex},
-    vec::{Vec2, Vec4},
+    scene::project,
+    vec::{Vec2, Vec3, Vec4},
 };
 
 use minifb::{Key, Window, WindowOptions};
@@ -14,6 +17,8 @@ const WIDTH: usize = 640;
 const HEIGHT: usize = 640;
 
 fn main() {
+    let obj = obj::load_obj("./src/teapot.obj");
+
     let mut fb = FrameBuffer::new(WIDTH, HEIGHT);
     let mut ras = Rasterizer::new();
 
@@ -25,44 +30,43 @@ fn main() {
     while window.is_open() && !window.is_key_down(Key::Escape) {
         ras.clear(&mut fb, Vec4::splat(0.0));
 
-        let v0 = Vertex {
-            pos: Vec2::new(0.0, 0.5),
-            z: 0.3,
-            col: Vec4::new(1.0, 0.0, 0.0, 1.0),
-        };
+        for face in &obj.indices {
+            let offset = Vec3::new(0.0, -1.5, 5.0);
+            let v0 = obj.vertices[face[0]].rotate_y(t) + offset;
+            let v1 = obj.vertices[face[1]].rotate_y(t) + offset;
+            let v2 = obj.vertices[face[2]].rotate_y(t) + offset;
 
-        let v1 = Vertex {
-            pos: Vec2::new(-0.5, -0.5),
-            z: 0.3,
-            col: Vec4::new(1.0, 0.0, 0.0, 1.0),
-        };
+            let normal = (v1 - v0).cross(v2 - v0).normalize();
 
-        let v2 = Vertex {
-            pos: Vec2::new(0.5, -0.5),
-            z: 0.3,
-            col: Vec4::new(1.0, 0.0, 0.0, 1.0),
-        };
+            if v0.z <= 0.1 || v1.z <= 0.1 || v2.z <= 0.1 {
+                continue;
+            }
 
-        let v3 = Vertex {
-            pos: Vec2::new(0.0, -0.5),
-            z: 0.8,
-            col: Vec4::new(0.0, 0.0, 1.0, 1.0),
-        };
+            let col = Vec4::new(normal.x.abs(), normal.y.abs(), normal.z.abs(), 1.0);
 
-        let v4 = Vertex {
-            pos: Vec2::new(-0.5, 0.5),
-            z: 0.8,
-            col: Vec4::new(0.0, 0.0, 1.0, 1.0),
-        };
+            let vt0 = Vertex {
+                pos: project(v0),
+                z: v0.z,
+                col,
+            };
 
-        let v5 = Vertex {
-            pos: Vec2::new(0.5, 0.5),
-            z: 0.8,
-            col: Vec4::new(0.0, 0.0, 1.0, 1.0),
-        };
+            let vt1 = Vertex {
+                pos: project(v1),
+                z: v1.z,
+                col,
+            };
 
-        ras.draw_triangle(&mut fb, v0, v1, v2);
-        ras.draw_triangle(&mut fb, v3, v4, v5);
+            let vt2 = Vertex {
+                pos: project(v2),
+                z: v2.z,
+                col,
+            };
+
+            if normal.dot(v0) < 0.0 {
+                ras.draw_triangle(&mut fb, vt0, vt1, vt2);
+            }
+        }
+
         window.update_with_buffer(&fb.buf, WIDTH, HEIGHT).unwrap();
 
         t += 0.01;

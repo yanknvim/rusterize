@@ -1,41 +1,56 @@
 use std::ops::{Add, Div, Mul, Sub};
 
 #[derive(Debug, Clone, Copy)]
-pub struct Vec4 {
+pub struct Vec3 {
     pub x: f32,
     pub y: f32,
     pub z: f32,
-    pub w: f32,
 }
 
-impl Vec4 {
+impl Vec3 {
     #[inline]
-    pub fn new(x: f32, y: f32, z: f32, w: f32) -> Self {
-        Self { x, y, z, w }
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Self { x, y, z }
     }
 
     #[inline]
     pub fn splat(x: f32) -> Self {
+        Self { x: x, y: x, z: x }
+    }
+
+    pub fn rotate_y(&self, t: f32) -> Self {
+        let c = t.cos();
+        let s = t.sin();
+
         Self {
-            x: x,
-            y: x,
-            z: x,
-            w: x,
+            x: self.x * c + self.z * s,
+            y: self.y,
+            z: -self.x * s + self.z * c,
         }
     }
 
-    #[inline]
-    pub fn to_u32(&self) -> u32 {
-        let x = (self.x.clamp(0.0, 1.0) * 255.0) as u32;
-        let y = (self.y.clamp(0.0, 1.0) * 255.0) as u32;
-        let z = (self.z.clamp(0.0, 1.0) * 255.0) as u32;
-        let w = (self.w.clamp(0.0, 1.0) * 255.0) as u32;
+    pub fn cross(self, other: Vec3) -> Self {
+        Self {
+            x: self.y * other.z - self.z * other.y,
+            y: self.z * other.x - self.x * other.z,
+            z: self.x * other.y - self.y * other.x,
+        }
+    }
 
-        (w << 24) | (x << 16) | (y << 8) | z
+    pub fn dot(self, other: Vec3) -> f32 {
+        self.x * other.x + self.y * other.y + self.z * other.z
+    }
+
+    pub fn len(self) -> f32 {
+        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+    }
+
+    pub fn normalize(self) -> Vec3 {
+        self / self.len()
     }
 }
 
-impl Add for Vec4 {
+impl Add for Vec3 {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self {
@@ -43,12 +58,11 @@ impl Add for Vec4 {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
             z: self.z + rhs.z,
-            w: self.w + rhs.w,
         }
     }
 }
 
-impl Sub for Vec4 {
+impl Sub for Vec3 {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self {
@@ -56,12 +70,11 @@ impl Sub for Vec4 {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
             z: self.z - rhs.z,
-            w: self.w - rhs.w,
         }
     }
 }
 
-impl Mul for Vec4 {
+impl Mul for Vec3 {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self {
@@ -69,12 +82,11 @@ impl Mul for Vec4 {
             x: self.x * rhs.x,
             y: self.y * rhs.y,
             z: self.z * rhs.z,
-            w: self.w * rhs.w,
         }
     }
 }
 
-impl Mul<f32> for Vec4 {
+impl Mul<f32> for Vec3 {
     type Output = Self;
 
     fn mul(self, rhs: f32) -> Self {
@@ -82,12 +94,11 @@ impl Mul<f32> for Vec4 {
             x: self.x * rhs,
             y: self.y * rhs,
             z: self.z * rhs,
-            w: self.w * rhs,
         }
     }
 }
 
-impl Div for Vec4 {
+impl Div for Vec3 {
     type Output = Self;
 
     fn div(self, rhs: Self) -> Self {
@@ -95,12 +106,11 @@ impl Div for Vec4 {
             x: self.x / rhs.x,
             y: self.y / rhs.y,
             z: self.z / rhs.z,
-            w: self.w / rhs.w,
         }
     }
 }
 
-impl Div<f32> for Vec4 {
+impl Div<f32> for Vec3 {
     type Output = Self;
 
     fn div(self, rhs: f32) -> Self {
@@ -108,7 +118,6 @@ impl Div<f32> for Vec4 {
             x: self.x / rhs,
             y: self.y / rhs,
             z: self.z / rhs,
-            w: self.w / rhs,
         }
     }
 }

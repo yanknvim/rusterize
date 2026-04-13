@@ -26,21 +26,43 @@ fn main() {
         ras.clear(&mut fb, Vec4::splat(0.0));
 
         let v0 = Vertex {
-            pos: Vec2::new(0.0, 0.5).rotate(t),
+            pos: Vec2::new(0.0, 0.5),
+            z: 0.3,
             col: Vec4::new(1.0, 0.0, 0.0, 1.0),
         };
 
         let v1 = Vertex {
-            pos: Vec2::new(-0.5, -0.5).rotate(t),
-            col: Vec4::new(0.0, 1.0, 0.0, 1.0),
+            pos: Vec2::new(-0.5, -0.5),
+            z: 0.3,
+            col: Vec4::new(1.0, 0.0, 0.0, 1.0),
         };
 
         let v2 = Vertex {
-            pos: Vec2::new(0.5, -0.5).rotate(t),
+            pos: Vec2::new(0.5, -0.5),
+            z: 0.3,
+            col: Vec4::new(1.0, 0.0, 0.0, 1.0),
+        };
+
+        let v3 = Vertex {
+            pos: Vec2::new(0.0, -0.5),
+            z: 0.8,
+            col: Vec4::new(0.0, 0.0, 1.0, 1.0),
+        };
+
+        let v4 = Vertex {
+            pos: Vec2::new(-0.5, 0.5),
+            z: 0.8,
+            col: Vec4::new(0.0, 0.0, 1.0, 1.0),
+        };
+
+        let v5 = Vertex {
+            pos: Vec2::new(0.5, 0.5),
+            z: 0.8,
             col: Vec4::new(0.0, 0.0, 1.0, 1.0),
         };
 
         ras.draw_triangle(&mut fb, v0, v1, v2);
+        ras.draw_triangle(&mut fb, v3, v4, v5);
         window.update_with_buffer(&fb.buf, WIDTH, HEIGHT).unwrap();
 
         t += 0.01;

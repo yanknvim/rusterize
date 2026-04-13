@@ -4,6 +4,7 @@ pub struct FrameBuffer {
     pub width: usize,
     pub height: usize,
     pub buf: Vec<u32>,
+    pub depth: Vec<f32>,
 }
 
 impl FrameBuffer {
@@ -12,6 +13,7 @@ impl FrameBuffer {
             width,
             height,
             buf: vec![0; width * height],
+            depth: vec![std::f32::INFINITY; width * height],
         }
     }
 
@@ -28,10 +30,11 @@ impl FrameBuffer {
     }
 
     pub fn clear(&mut self, col: u32) {
-        self.buf.fill(col)
+        self.buf.fill(col);
+        self.depth.fill(std::f32::INFINITY);
     }
 
-    pub fn set_pixel(&mut self, p: IVec2, col: u32) {
+    pub fn set_pixel(&mut self, p: IVec2, z: f32, col: u32) {
         if p.x < 0 || p.y < 0 {
             return;
         }
@@ -40,6 +43,10 @@ impl FrameBuffer {
             return;
         }
 
-        self.buf[(p.y * self.width as i32 + p.x) as usize] = col;
+        let i = (p.y * self.width as i32 + p.x) as usize;
+        if self.depth[i] > z {
+            self.buf[i] = col;
+            self.depth[i] = z;
+        }
     }
 }

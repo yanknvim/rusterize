@@ -6,15 +6,15 @@ use crate::{
 #[derive(Debug, Clone, Copy)]
 pub struct Vertex {
     pub pos: Vec2,
+    pub z: f32,
     pub col: Vec4,
 }
 
-pub struct Rasterizer { }
+pub struct Rasterizer {}
 
 impl Rasterizer {
     pub fn new() -> Self {
-        Self {
-        }
+        Self {}
     }
 
     pub fn clear(&mut self, fb: &mut FrameBuffer, col: Vec4) {
@@ -26,7 +26,7 @@ impl Rasterizer {
         let p = fb.ndc_to_screen(p);
         let col = col.to_u32();
 
-        fb.set_pixel(p, col);
+        fb.set_pixel(p, 0.0, col);
     }
 
     pub fn draw_line(&mut self, fb: &mut FrameBuffer, p0: Vec2, p1: Vec2, col: Vec4) {
@@ -46,7 +46,7 @@ impl Rasterizer {
         let mut err = dx - dy;
 
         loop {
-            fb.set_pixel(IVec2::new(p0.x, p0.y), col);
+            fb.set_pixel(IVec2::new(p0.x, p0.y), 0.0, col);
             if p0.x == p1.x && p0.y == p1.y {
                 break;
             }
@@ -63,7 +63,14 @@ impl Rasterizer {
         }
     }
 
-    pub fn draw_triangle_wire(&mut self, fb: &mut FrameBuffer, p0: Vec2, p1: Vec2, p2: Vec2, col: Vec4) {
+    pub fn draw_triangle_wire(
+        &mut self,
+        fb: &mut FrameBuffer,
+        p0: Vec2,
+        p1: Vec2,
+        p2: Vec2,
+        col: Vec4,
+    ) {
         self.draw_line(fb, p0, p1, col);
         self.draw_line(fb, p1, p2, col);
         self.draw_line(fb, p0, p2, col);
@@ -106,10 +113,11 @@ impl Rasterizer {
                 let w1 = IVec2::edge(p2, p0, p) / area;
                 let w2 = IVec2::edge(p0, p1, p) / area;
 
-                if (w0 >= 0.0 && w1 >= 0.0 && w2 >= 0.0) || (w0 <= 0.0 && w1 <= 0.0 && w2 <= 0.0) {
+                if w0 >= 0.0 && w1 >= 0.0 && w2 >= 0.0 {
                     let col = v0.col * w0 + v1.col * w1 + v2.col * w2;
+                    let z = v0.z * w0 + v1.z * w1 + v2.z * w2;
 
-                    fb.set_pixel(IVec2::new(x, y), col.to_u32());
+                    fb.set_pixel(IVec2::new(x, y), z, col.to_u32());
                 }
             }
         }

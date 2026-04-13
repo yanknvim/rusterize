@@ -1,5 +1,11 @@
 use crate::{framebuffer::FrameBuffer, vec::{Vec2, Vec4}};
 
+#[derive(Debug, Clone, Copy)]
+pub struct Vertex {
+    pub pos: Vec2,
+    pub col: Vec4,
+}
+
 pub struct Rasterizer<'a> {
     fb: &'a mut FrameBuffer,
 }
@@ -65,14 +71,13 @@ impl<'a> Rasterizer<'a> {
 
     pub fn draw_triangle(
         &mut self,
-        p0: Vec2,
-        p1: Vec2,
-        p2: Vec2,
-        col: Vec4,
+        v0: Vertex,
+        v1: Vertex,
+        v2: Vertex,
     ) {
-        let (x0, y0) = self.fb.ndc_to_screen(p0);
-        let (x1, y1) = self.fb.ndc_to_screen(p1);
-        let (x2, y2) = self.fb.ndc_to_screen(p2);
+        let (x0, y0) = self.fb.ndc_to_screen(v0.pos);
+        let (x1, y1) = self.fb.ndc_to_screen(v1.pos);
+        let (x2, y2) = self.fb.ndc_to_screen(v2.pos);
 
         let p0 = Vec2::new(x0 as f32, y0 as f32);
         let p1 = Vec2::new(x1 as f32, y1 as f32);
@@ -83,19 +88,20 @@ impl<'a> Rasterizer<'a> {
         let min_y = y0.min(y1).min(y2);
         let max_y = y0.max(y1).max(y2);
 
-        let col = col.to_u32();
-
         for y in min_y..=max_y {
             for x in min_x..=max_x {
                 let p = Vec2::new(x as f32, y as f32);
 
-                let w0 = Vec2::edge(&p1, &p2, &p);
-                let w1 = Vec2::edge(&p2, &p0, &p);
-                let w2 = Vec2::edge(&p0, &p1, &p);
+                let area = Vec2::edge(p0, p1, p2);
+
+                let w0 = Vec2::edge(p1, p2, p) / area;
+                let w1 = Vec2::edge(p2, p0, p) / area;
+                let w2 = Vec2::edge(p0, p1, p) / area;
 
                 if (w0 >= 0.0 && w1 >= 0.0 && w2 >= 0.0) 
                 || (w0 <= 0.0 && w1 <= 0.0 && w2 <= 0.0){
-                    self.fb.set_pixel(x, y, col);
+                    let col = v0.col * w0 + v1.col * w1 + v2.col * w2;
+                    self.fb.set_pixel(x, y, col.to_u32());
                 }
             }
         }

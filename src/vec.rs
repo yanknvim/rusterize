@@ -34,7 +34,7 @@ impl Vec2 {
         }
     }
 
-    pub fn edge(a: &Vec2, b: &Vec2, p: &Vec2) -> f32 {
+    pub fn edge(a: Vec2, b: Vec2, p: Vec2) -> f32 {
         (p.x - a.x) * (b.y - a.y)
       - (p.y - a.y) * (b.x - a.x)
     }
@@ -73,6 +73,17 @@ impl Mul for Vec2 {
     }
 }
 
+impl Mul<f32> for Vec2 {
+    type Output = Self;
+
+    fn mul(self, rhs: f32) -> Self {
+        Self {
+            x: self.x * rhs,
+            y: self.y * rhs,
+        }
+    }
+}
+
 impl Div for Vec2 {
     type Output = Self;
 
@@ -80,6 +91,17 @@ impl Div for Vec2 {
         Self {
             x: self.x / rhs.x,
             y: self.y / rhs.y,
+        }
+    }
+}
+
+impl Div<f32> for Vec2 {
+    type Output = Self;
+
+    fn div(self, rhs: f32) -> Self {
+        Self {
+            x: self.x / rhs,
+            y: self.y / rhs,
         }
     }
 }
@@ -150,15 +172,28 @@ impl Mul for Vec4 {
     }
 }
 
-impl Div for Vec4 {
+impl Mul<f32> for Vec4 {
     type Output = Self;
 
-    fn div(self, rhs: Self) -> Self {
+    fn mul(self, rhs: f32) -> Self {
         Self {
-            x: self.x / rhs.x,
-            y: self.y / rhs.y,
-            z: self.z / rhs.z,
-            w: self.w / rhs.w,
+            x: self.x * rhs,
+            y: self.y * rhs,
+            z: self.z * rhs,
+            w: self.w * rhs,
+        }
+    }
+}
+
+impl Div<f32> for Vec4 {
+    type Output = Self;
+
+    fn div(self, rhs: f32) -> Self {
+        Self {
+            x: self.x / rhs,
+            y: self.y / rhs,
+            z: self.z / rhs,
+            w: self.w / rhs,
         }
     }
 }

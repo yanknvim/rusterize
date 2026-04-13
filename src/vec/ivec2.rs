@@ -17,6 +17,13 @@ impl IVec2 {
     pub fn edge(a: IVec2, b: IVec2, p: Vec2) -> f32 {
         (p.x - a.x as f32) * (b.y - a.y) as f32 - (p.y - a.y as f32) * (b.x - a.x) as f32
     }
+
+    pub fn to_vec2(&self) -> Vec2 {
+        Vec2 {
+            x: self.x as f32,
+            y: self.y as f32,
+        }
+    }
 }
 
 impl Add for IVec2 {

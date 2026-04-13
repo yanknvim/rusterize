@@ -3,7 +3,7 @@ use crate::vec::{IVec2, Vec2};
 pub struct FrameBuffer {
     pub width: usize,
     pub height: usize,
-    buf: Vec<u32>,
+    pub buf: Vec<u32>,
 }
 
 impl FrameBuffer {
@@ -25,10 +25,6 @@ impl FrameBuffer {
         let y = (1.0 - (v.y + 1.0) * 0.5) * scale + offset_y;
 
         IVec2::new(x as i32, y as i32)
-    }
-
-    pub fn buf(&self) -> &Vec<u32> {
-        &self.buf
     }
 
     pub fn clear(&mut self, col: u32) {

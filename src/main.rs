@@ -15,7 +15,7 @@ const HEIGHT: usize = 640;
 
 fn main() {
     let mut fb = FrameBuffer::new(WIDTH, HEIGHT);
-    let mut ras = Rasterizer::new(&mut fb);
+    let mut ras = Rasterizer::new();
 
     let mut window = Window::new("Rusterize", WIDTH, HEIGHT, WindowOptions::default()).unwrap();
 
@@ -23,7 +23,7 @@ fn main() {
 
     let mut t = 0.0;
     while window.is_open() && !window.is_key_down(Key::Escape) {
-        ras.clear(Vec4::splat(0.0));
+        ras.clear(&mut fb, Vec4::splat(0.0));
 
         let v0 = Vertex {
             pos: Vec2::new(0.0, 0.5).rotate(t),
@@ -40,8 +40,8 @@ fn main() {
             col: Vec4::new(0.0, 0.0, 1.0, 1.0),
         };
 
-        ras.draw_triangle(v0, v1, v2);
-        window.update_with_buffer(ras.buf(), WIDTH, HEIGHT).unwrap();
+        ras.draw_triangle(&mut fb, v0, v1, v2);
+        window.update_with_buffer(&fb.buf, WIDTH, HEIGHT).unwrap();
 
         t += 0.01;
     }

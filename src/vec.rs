@@ -1,12 +1,12 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Vec2 {
     pub x: f32,
     pub y: f32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Vec4 {
     pub x: f32,
     pub y: f32,
@@ -32,6 +32,11 @@ impl Vec2 {
             x: self.x * c - self.y * s,
             y: self.x * s + self.y * c,
         }
+    }
+
+    pub fn edge(a: &Vec2, b: &Vec2, p: &Vec2) -> f32 {
+        (p.x - a.x) * (b.y - a.y)
+      - (p.y - a.y) * (b.x - a.x)
     }
 }
 

@@ -1,10 +1,12 @@
 use crate::vec::Vec3;
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 pub struct Mesh {
     pub vertices: Vec<Vec3>,
     pub indices: Vec<[usize; 3]>,
+    pub normals: Vec<Vec3>,
 }
 
 pub fn load_obj(path: &str) -> Mesh {
@@ -39,5 +41,26 @@ pub fn load_obj(path: &str) -> Mesh {
         }
     }
 
-    Mesh { vertices, indices }
+    let mut normals = vec![Vec3::new(0.0, 0.0, 0.0); vertices.len()];
+
+    for face in &indices {
+        let v0 = vertices[face[0]];
+        let v1 = vertices[face[1]];
+        let v2 = vertices[face[2]];
+
+        let face_normal = (v1 - v0).cross(v2 - v0);
+        normals[face[0]] += face_normal;
+        normals[face[1]] += face_normal;
+        normals[face[2]] += face_normal;
+    }
+
+    for n in &mut normals {
+        *n = n.normalize();
+    }
+
+    Mesh {
+        vertices,
+        indices,
+        normals,
+    }
 }

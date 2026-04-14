@@ -1,13 +1,15 @@
 use crate::{
     framebuffer::FrameBuffer,
-    vec::{IVec2, Vec2, Vec4},
+    vec::{IVec2, Vec2, Vec3, Vec4},
 };
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vertex {
     pub pos: Vec2,
     pub z: f32,
+    pub world_pos: Vec3,
     pub col: Vec4,
+    pub normal: Vec3,
 }
 
 pub struct Rasterizer {}
@@ -94,10 +96,29 @@ impl Rasterizer {
         v1: Vertex,
         v2: Vertex,
     ) {
+        let light_dir = Vec3::new(1.0, 1.0, -1.0).normalize();
+        let pos = Vec3::splat(0.0);
+
         let min_x = p0.x.min(p1.x).min(p2.x);
         let max_x = p0.x.max(p1.x).max(p2.x);
         let min_y = p0.y.min(p1.y).min(p2.y);
         let max_y = p0.y.max(p1.y).max(p2.y);
+
+        let inv_z0 = 1.0 / v0.z;
+        let inv_z1 = 1.0 / v1.z;
+        let inv_z2 = 1.0 / v2.z;
+
+        let n0_z = v0.normal * inv_z0;
+        let n1_z = v1.normal * inv_z1;
+        let n2_z = v2.normal * inv_z2;
+
+        let col0_z = v0.col * inv_z0;
+        let col1_z = v1.col * inv_z1;
+        let col2_z = v2.col * inv_z2;
+
+        let wpos0_z = v0.world_pos * inv_z0;
+        let wpos1_z = v1.world_pos * inv_z1;
+        let wpos2_z = v2.world_pos * inv_z2;
 
         let area = IVec2::edge(p0, p1, p2.to_vec2());
 
@@ -114,10 +135,25 @@ impl Rasterizer {
                 let w2 = IVec2::edge(p0, p1, p) / area;
 
                 if w0 >= 0.0 && w1 >= 0.0 && w2 >= 0.0 {
-                    let col = v0.col * w0 + v1.col * w1 + v2.col * w2;
-                    let z = v0.z * w0 + v1.z * w1 + v2.z * w2;
+                    let interp_inv_z = inv_z0 * w0 + inv_z1 * w1 + inv_z2 * w2;
+                    let z = 1.0 / interp_inv_z;
+                    let normal = ((n0_z * w0 + n1_z * w1 + n2_z * w2) * z).normalize();
 
-                    fb.set_pixel(IVec2::new(x, y), z, col.to_u32());
+                    let col = (col0_z * w0 + col1_z * w1 + col2_z * w2) * z;
+                    let world_pos = (wpos0_z * w0 + wpos1_z * w1 + wpos2_z * w2) * z;
+
+                    let l = light_dir.normalize();
+
+                    let v = (pos - world_pos).normalize();
+                    let h = (l + v).normalize();
+
+                    let ambient = 0.1;
+                    let diffuse = normal.dot(l).max(0.0);
+                    let spec = normal.dot(h).max(0.0).powf(16.0);
+
+                    let intensity = (ambient + diffuse + spec).min(1.0);
+
+                    fb.set_pixel(IVec2::new(x, y), z, (col * intensity).to_u32());
                 }
             }
         }

@@ -24,6 +24,9 @@ fn main() {
 
     let mut window = Window::new("Rusterize", WIDTH, HEIGHT, WindowOptions::default()).unwrap();
 
+    let light_dir = Vec3::new(1.0, 1.0, -1.0).normalize();
+    let pos = Vec3::splat(0.0);
+
     window.set_target_fps(60);
 
     let mut t = 0.0;
@@ -42,7 +45,18 @@ fn main() {
                 continue;
             }
 
-            let col = Vec4::new(normal.x.abs(), normal.y.abs(), normal.z.abs(), 1.0);
+            let l = light_dir.normalize();
+
+            let v = (v0-pos).normalize();
+            let h = (l + v).normalize();
+
+            let ambient = 0.1;
+            let diffuse = normal.dot(l).max(0.0);
+            let spec = normal.dot(h).max(0.0).powf(16.0);
+
+            let intensity = (ambient + diffuse + spec).min(1.0);
+
+            let col = Vec4::new(intensity, intensity, intensity, 1.0);
 
             let vt0 = Vertex {
                 pos: project(v0),

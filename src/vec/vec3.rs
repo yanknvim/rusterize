@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Mul, Sub, Neg};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3 {
@@ -47,6 +47,17 @@ impl Vec3 {
 
     pub fn normalize(self) -> Vec3 {
         self / self.len()
+    }
+}
+impl Neg for Vec3 {
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        Self {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+        }
     }
 }
 

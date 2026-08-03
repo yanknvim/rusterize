@@ -1,5 +1,5 @@
 use crate::vec::Vec3;
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -54,8 +54,23 @@ pub fn load_obj(path: &str) -> Mesh {
         normals[face[2]] += face_normal;
     }
 
-    for n in &mut normals {
-        *n = n.normalize();
+    let mut merged: HashMap<(i32, i32, i32), Vec3> = HashMap::new();
+    for (v, n) in vertices.iter().zip(&normals) {
+        let key = (
+            (v.x * 100000.0) as i32,
+            (v.y * 100000.0) as i32,
+            (v.z * 100000.0) as i32,
+        );
+        *merged.entry(key).or_insert(Vec3::splat(0.0)) += *n;
+    }
+
+    for (v, n) in vertices.iter_mut().zip(&mut normals) {
+        let key = (
+            (v.x * 100000.0) as i32,
+            (v.y * 100000.0) as i32,
+            (v.z * 100000.0) as i32,
+        );
+        *n = merged[&key].normalize();
     }
 
     Mesh {
